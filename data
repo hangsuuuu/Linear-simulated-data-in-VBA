@@ -1,0 +1,36 @@
+import numpy as np
+import torch
+
+def new_example1(e=1, N=1000):
+    #independent causes
+    beta = np.array([3.0, 2, 0])
+    x2_e = torch.normal(0, 1, [N,1])
+    x1_e = torch.normal(0.5, 1, [N,1])
+    # y_e = ((beta[0] * x1_e + beta[1] * x2_e + torch.randn(N,1)) > 1).float()
+    y_e = ((beta[0] * x1_e + beta[1] * x2_e + torch.randn(N,1)) > 1).float()
+    z = e*y_e + torch.normal(0, e, [N,1])
+    return torch.cat((x1_e, x2_e, z), 1), y_e, beta
+
+
+def new_example2(e=1, N=1000):
+    #correlated causes
+    beta = np.array([2.0, 0, 0, 1.5])
+    x2_e = torch.normal(0, np.abs(e),[N,1])
+    x1_e = td.Uniform(-1,1).sample([N,1]) + x2_e
+    x4_e = x1_e + torch.normal(1, 1,[N,1])
+    # y_e = ((beta[0] * x1_e + beta[1] * x3_e + torch.randn(N,1))>0).float()
+    y_e = ((beta[0] * x1_e + beta[-1] * x4_e + torch.randn(N,1))>3).float()
+    z = e*y_e + torch.randn(N,1)
+    return torch.cat((x1_e, x2_e, z, x4_e), 1), y_e, beta
+
+
+def new_example4(e=1, N=1000):
+    #unobserved mediator, observe ancestor
+    beta = np.array([2.0, 1.0, 0, 0])
+    x2_e = torch.normal(1, e/2.,[N,1])
+    x1_e = x2_e + td.Uniform(0,1).sample([N,1])
+    u1 = x1_e + x2_e + torch.normal(0, 0.5,[N,1])
+    # y_e = ((beta[0] * u1 + beta[1] * x2_e + torch.randn(N,1))>6).float()
+    y_e = ((beta[0] * u1 + beta[1] * x2_e)>6).float()
+    z = e*y_e +  torch.randn(N,1)
+    return torch.cat((u1, x2_e, x1_e, z), 1), y_e, beta
